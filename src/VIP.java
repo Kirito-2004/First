@@ -1,4 +1,4 @@
-abstract class VIP extends Customer{
+public class VIP extends Customer{
     private double rate;
     private int level;
     public VIP(String name, double total, double rate, int level){
@@ -7,17 +7,22 @@ abstract class VIP extends Customer{
         this.level = level;
     }
 
-    public double setRate(){
+    public double getRate(){
         return rate;
     }
-    public void getRate(double rate){
+    public void setRate(double rate){
         this.rate = rate;
     }
 
-    public int setLevel(){
+    public int getLevel(){
         return level;
     }
-    public void getLevel(int level){
+    public void setLevel(int level){
         this.level = level;
+    }
+
+    @Override
+    public String info(){
+        return "Name: " + getName() + " Total: " + getTotal() + " Rate: " + getRate() + " Level: " + getLevel();
     }
 }

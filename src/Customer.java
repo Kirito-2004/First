@@ -8,17 +8,17 @@ abstract class Customer {
         this.total = total;
     }
 
-    public String setName(){
+    public String getName(){
         return name;
     }
-    public void getName(String name){
+    public void setName(String name){
         this.name = name;
     }
 
-    public double setTotal(){
+    public double getTotal(){
         return total;
     }
-    public void getTotal(double total){
+    public void setTotal(double total){
         this.total = total;
     }
 
