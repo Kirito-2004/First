@@ -13,16 +13,31 @@ public class Sever {
         System.out.print("Name: ");
         String name = this.nextLine();
         int tel=0;
-        while (!flag){
+        while (!flag) {
+            //Kiem tra so dien thoai co phai la so khong
             try {
                 System.out.print("Tel: ");
                 tel = this.nextInt();
-                flag=true;
+                flag = true;
+            } catch (Exception ex) {
+                System.out.println("\u001B[31m" + "<Invalid phone number, please try again!>" + "\u001B[0m");
             }
-            catch (Exception ex){
-                System.out.println("\u001B[31m" + "<Invalid phone number, please try again!>"+"\u001B[0m");
+
+            //Kiem tra so dien thoai co ton tai that khong
+            ListPerson lp = new ListPerson();
+            lp.readPerson("data/person.txt");
+            if ((!lp.isExist(Integer.toString(tel)))&&(flag==true)){
+                flag=false;
+                System.out.println("\u001B[31m" + "<This phone number is not exist, please try again!>" + "\u001B[0m");
+            }
+
+            //Kiem tra so dien thoai da duoc dang ky chua
+            if((this.hashAcc.get(tel)!=null)&&(flag==true)){
+                flag=false;
+                System.out.println("\u001B[31m" + "<This phone number has been registered, please try again!>"+"\u001B[0m");
             }
         }
+
         System.out.print("Password: ");
         String password = this.nextLine();
         Account a = new Account(name,tel,password);
