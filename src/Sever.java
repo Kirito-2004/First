@@ -8,18 +8,19 @@ public class Sever {
         Sever.lastAcc=0;
     }
     public void createAccount(){
-        boolean flag = false;
+        boolean flag;
         System.out.println("\u001B[36m"+"#Create Account:"+"\u001B[0m");
         System.out.print("Name: ");
         String name = this.nextLine();
         int tel=0;
-        while (!flag) {
+        do {
+            flag = true;
             //Kiem tra so dien thoai co phai la so khong
             try {
                 System.out.print("Tel: ");
                 tel = this.nextInt();
-                flag = true;
             } catch (Exception ex) {
+                flag = false;
                 System.out.println("\u001B[31m" + "<Invalid phone number, please try again!>" + "\u001B[0m");
             }
 
@@ -36,7 +37,7 @@ public class Sever {
                 flag=false;
                 System.out.println("\u001B[31m" + "<This phone number has been registered, please try again!>"+"\u001B[0m");
             }
-        }
+        }while(!flag);
 
         System.out.print("Password: ");
         String password = this.nextLine();
