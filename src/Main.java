@@ -2,11 +2,7 @@ import java.util.Scanner;
 public class Main {
     public static void main(String[] args) {
         Sever s = new Sever();
-        //Tao acc 1
-        while(true) {
-            s.createAccount();
-        }
-        //Tao acc 2
+        s.printAllProducts();
 //        s.createAccount();
 //        Scanner sc = new Scanner(System.in);
 //        System.out.print("Tel: ");

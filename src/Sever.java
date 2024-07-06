@@ -8,13 +8,19 @@ import java.io.IOException;
 public class Sever {
     Scanner sc = new Scanner(System.in);
     Account account = new Account();
+    Product product = new Product();
     private static int lastAcc;
+    private static int lastProd;
     private HashMap<Integer, Account> hashAcc;
+    private HashMap<Integer, Product> hashProd;
 
     public Sever() {
         this.hashAcc = new HashMap<>();
+        this.hashProd = new HashMap<>();
         Sever.lastAcc = 0;
+        Sever.lastProd = 0;
         loadAccountsFromFile();
+        loadProductsFromFile();
     }
 
     public void createAccount() {
@@ -36,7 +42,7 @@ public class Sever {
 
             // Kiem tra so dien thoai co ton tai that khong
             ListPerson lp = new ListPerson();
-            lp.readPerson("data/person.txt");
+            lp.readPerson("../data/person.txt");
             if ((!lp.isExist(Integer.toString(tel))) && (flag == true)) {
                 flag = false;
                 System.out.println("\u001B[31m" + "<This phone number is not exist, please try again!>" + "\u001B[0m");
@@ -92,6 +98,41 @@ public class Sever {
         } catch (IOException e) {
             System.out.println("\u001B[31m" + "<Error reading from file>" + "\u001B[0m");
         }
+    }
+
+    private void loadProductsFromFile() {
+        System.out.println("\u001B[36m" + "Load Product........" + "\u001B[0m");
+        try (BufferedReader reader = new BufferedReader(new FileReader("data/Product.txt"))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                try {
+                    Product product = Product.fromString(line);
+                    hashProd.put(product.getIdProd(), product);
+                    if (product.getIdProd() > Sever.getLastProd()) {
+                        Sever.lastProd = product.getIdProd() + 1;
+                    }
+                } catch (IllegalArgumentException e) {
+                    System.out.println("\u001B[31m" + "<Skipping invalid product data: " + line + ">" + "\u001B[0m");
+                }
+            }
+        } catch (IOException e) {
+            System.out.println("\u001B[31m" + "<Error reading from file>" + "\u001B[0m");
+        }
+    }
+
+    public void printAllProducts() {
+        if (hashProd.isEmpty()) {
+            System.out.println();
+            System.out.println("\u001B[31m" + "<< No products loaded >>" + "\u001B[0m");
+        } else {
+            System.out.println();
+            System.out.println("\u001B[36m" + "List Product:" + "\u001B[0m");
+            for (Product product : hashProd.values()) {
+                System.out.println(product);
+            }
+        }
+        System.out.println();
+        System.out.println("\u001B[32m" + "<< Load product successfuly >>" + "\u001B[0m");
     }
 
     public String nextLine() {
@@ -152,5 +193,13 @@ public class Sever {
 
     public static int getLastAcc() {
         return Sever.lastAcc;
+    }
+
+    public static void setLastProd(int n) {
+        Sever.lastProd = n;
+    }
+
+    public static int getLastProd() {
+        return Sever.lastProd;
     }
 }
