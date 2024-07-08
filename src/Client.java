@@ -6,9 +6,9 @@ public class Client {
     private Socket socket = null;
     private DataInputStream input = null;
     private DataOutputStream output = null;
-    private Customer customer;
 
     Scanner sc = new Scanner(System.in);
+    private Customer customer;
     // constructor to put ip address and port
     public Client(String address, int port)
     {
@@ -18,13 +18,18 @@ public class Client {
             input = new DataInputStream(socket.getInputStream());
             output = new DataOutputStream(socket.getOutputStream());
             int choice = 0;
-            while(choice==0){
+            if(this.customer == null){
+                output.writeInt(1); //Request menu A to server
+            }
+            else {
+                output.writeInt(2); //Request menu B to server
+            }
+            do{
                 if(this.customer == null){
                     menuA();
-                    output.writeInt(1);
                     System.out.print("\u001B[36m"+"#Select: "+"\u001B[0m");
                     choice = getChoice();
-                    output.writeInt(choice);
+                    output.writeInt(choice); //Send choice to server
                     switch(choice){
                         case 1:
                             createAccount();
@@ -39,12 +44,11 @@ public class Client {
                 }
                 else{
                     menuB();
-                    output.writeInt(2);
                     choice = getChoice();
                     output.writeInt(choice);
                 }
 
-            }
+            } while(choice==0);
 
 
 
@@ -68,12 +72,14 @@ public class Client {
     public int getChoice() {
         int choice = 0;
         try {
+            sc = new Scanner(System.in);
             choice = sc.nextInt();
         } catch (Exception e){}
         return choice;
     }
 
     public void menuA() {
+        System.out.println("\u001B[36m"+"#Menu A:"+"\u001B[0m");
         System.out.println("1.Create account");
         System.out.println("2.Login account");
         System.out.println("3.Exit");
@@ -118,11 +124,10 @@ public class Client {
             System.out.println("\u001B[36m" + "#Create Account:" + "\u001B[0m");
             System.out.print("Name: ");
             String name = this.nextLine();
-            output.writeUTF(name);
+            output.writeUTF(name); //Send name to server
             int tel = 0;
             do {
                 flag = true;
-                // Kiem tra so dien thoai co phai la so khong
                 try {
                     System.out.print("Tel: ");
                     tel = this.nextInt();
@@ -131,11 +136,11 @@ public class Client {
                     System.out.println("\u001B[31m" + "<Invalid phone number, please try again!>" + "\u001B[0m");
                 }
                 if(flag) {
-                    output.writeInt(tel);
-                    flag = input.readBoolean();
+                    output.writeInt(tel); //Send tel to server
+                    flag = input.readBoolean(); //Receive flag from server 1
 
                     if (flag) {
-                        flag = input.readBoolean();
+                        flag = input.readBoolean(); //Receive flag from server 2
                         if (!flag) {
                             System.out.println("\u001B[31m" + "<This phone number is registed, please try again!>" + "\u001B[0m");
                         }

@@ -32,65 +32,43 @@ public class Server {
         try{
             server = new ServerSocket(port);
             System.out.println("\u001B[36m"+"#Server started"+"\u001B[0m");
-            socket = server.accept();
             while(true){
-                System.out.println("\u001B[32m"+"<Client connected>"+"\u001B[0m");
-                input = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
-                output = new DataOutputStream(socket.getOutputStream());
-                int menu = input.readInt();
-                if(menu==1){
-                    int choice = 0;
-                    while (choice==0) {
-                        choice = input.readInt();
-                        switch (choice) {
-                            case 1:
-                                boolean flag;
-                                String name = input.readUTF();
-                                int tel=0;
-                                do{
-                                    flag = true;
-                                    tel = input.readInt();
-                                    if(!this.listPerson.isExist(Integer.toString(tel))){
-                                        flag = false;
-                                        output.writeBoolean(false);
-                                    }
-                                    else output.writeBoolean(true);
-
-                                    if(flag){
-                                        if(this.hashAcc.get(tel) != null){
-                                            flag = false;
-                                            output.writeBoolean(false);
-                                        }
-                                        else output.writeBoolean(true);
-                                    }
-                                }while(!flag);
-                                String password = input.readUTF();
-                                Account a = new Account(name, tel, password);
-                                hashAcc.put(tel, a);
-                                saveAccountToFile(a);
-                                break;
-                            case 2:
-                                break;
-                            case 3:
-                                printAllProducts();
-                                break;
-                            case 4:
-                                System.exit(0);
-                                break;
-                        }
-//                    try {
-//                        choice = input.readInt();
-//                        System.out.println(line);
-//                    } catch (IOException i) {
-//                        System.out.println("\u001B[31m"+"<Client disconnected>"+"\u001B[0m");
-//                        socket.close();
-//                        in.close();
-//                        break;
-//                    }
+                socket = server.accept();
+                try {
+                    System.out.println("\u001B[32m"+"<Client connected>"+"\u001B[0m");
+                    input = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
+                    output = new DataOutputStream(socket.getOutputStream());
+                    int menu = input.readInt();
+                    if(menu==1){ //Response menu A
+                        System.out.println ("Select menu A"); //
+                        int choice = 0;
+                        do {
+                            choice = input.readInt(); //Receive choice
+                            switch (choice) {
+                                case 1:
+                                    System.out.println("Create account"); //
+                                    createAccount();
+                                    break;
+                                case 2:
+                                    break;
+                                case 3:
+                                    printAllProducts();
+                                    break;
+                                case 4:
+                                    System.exit(0);
+                                    break;
+                            }
+                        } while (choice==0);
+                    }
+                    else { //Response menu B
+                        System.out.println("Select menu B"); //
                     }
                 }
-
-                socket = server.accept();
+                catch(IOException i) {
+                    System.out.println("\u001B[31m"+"<Client disconnected>"+"\u001B[0m");
+                    socket.close();
+                    input.close();
+                }
             }
         }
         catch(IOException i)
@@ -98,6 +76,41 @@ public class Server {
             System.out.println("\u001B[31m"+"<Cannot connect to server>"+"\u001B[0m");
             System.exit(1);
         }
+    }
+
+    public void createAccount() {
+        try{
+            boolean flag;
+            String name = input.readUTF(); //Receive name
+            System.out.println("Name: "+name); //
+            int tel=0;
+            do{
+                flag = true;
+                tel = input.readInt(); //Receive tel
+                System.out.println("Tel: "+tel); //
+                if(!this.listPerson.isExist(Integer.toString(tel))){
+                    flag = false;
+                    output.writeBoolean(false);
+                    System.out.println("Tel is not exist"); //
+                }
+                else output.writeBoolean(true); //Send flag to client 1
+
+                if(flag){
+                    if(this.hashAcc.get(tel) != null){
+                        flag = false;
+                        output.writeBoolean(false);
+                        System.out.println("Tel is registered"); //
+                    }
+                    else output.writeBoolean(true); //Send flag to client 2
+                }
+            }while(!flag);
+            String password = input.readUTF();
+            System.out.println("Password: "+password); //
+            Account a = new Account(name, tel, password);
+            hashAcc.put(tel, a);
+            saveAccountToFile(a);
+            System.out.println("\u001B[32m"+"<Create account successfully>"+"\u001B[0m");
+        } catch (Exception ex){}
     }
 
     public boolean login(int tel, String password) {
