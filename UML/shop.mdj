@@ -17,7 +17,7 @@
 					"_parent": {
 						"$ref": "AAAAAAFF+qBWK6M3Z8Y="
 					},
-					"name": "Main",
+					"name": "Shop",
 					"defaultDiagram": true,
 					"ownedViews": [
 						{
@@ -518,7 +518,7 @@
 											"top": 263,
 											"width": 119,
 											"height": 13,
-											"text": "Sever"
+											"text": "Server"
 										},
 										{
 											"_type": "LabelView",
@@ -7764,7 +7764,7 @@
 					"_parent": {
 						"$ref": "AAAAAAFF+qBWK6M3Z8Y="
 					},
-					"name": "Sever",
+					"name": "Server",
 					"ownedElements": [
 						{
 							"_type": "UMLAssociation",

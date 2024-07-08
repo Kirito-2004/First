@@ -13,8 +13,8 @@ public class Product {
     }
 
     public Product(String name, double price) {
-        this.idProd = Sever.getLastProd();
-        Sever.setLastProd(Sever.getLastProd() + 1);
+        this.idProd = Server.getLastProd();
+        Server.setLastProd(Server.getLastProd() + 1);
         this.name = name;
         this.price = price;
     }

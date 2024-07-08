@@ -1,80 +1,115 @@
+import java.io.*;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.HashMap;
 import java.util.Scanner;
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
 
-public class Sever {
+public class Server {
+    private Socket socket = null;
+    private ServerSocket server = null;
+    private DataInputStream input = null;
+    private DataOutputStream output = null;
+
     Scanner sc = new Scanner(System.in);
-    Account account = new Account();
-    Product product = new Product();
     private static int lastAcc;
     private static int lastProd;
     private HashMap<Integer, Account> hashAcc;
     private HashMap<Integer, Product> hashProd;
+    private ListPerson listPerson;
 
-    public Sever() {
+    public Server(int port)
+    {
         this.hashAcc = new HashMap<>();
         this.hashProd = new HashMap<>();
-        Sever.lastAcc = 0;
-        Sever.lastProd = 0;
+        this.listPerson = new ListPerson();
+        this.listPerson.readPerson("data/person.txt");
+        Server.lastAcc = 0;
+        Server.lastProd = 0;
+
         loadAccountsFromFile();
         loadProductsFromFile();
-    }
 
-    public void createAccount() {
-        boolean flag;
-        System.out.println("\u001B[36m" + "#Create Account:" + "\u001B[0m");
-        System.out.print("Name: ");
-        String name = this.nextLine();
-        int tel = 0;
-        do {
-            flag = true;
-            // Kiem tra so dien thoai co phai la so khong
-            try {
-                System.out.print("Tel: ");
-                tel = this.nextInt();
-            } catch (Exception ex) {
-                flag = false;
-                System.out.println("\u001B[31m" + "<Invalid phone number, please try again!>" + "\u001B[0m");
-            }
+        try{
+            server = new ServerSocket(port);
+            System.out.println("\u001B[36m"+"#Server started"+"\u001B[0m");
+            socket = server.accept();
+            while(true){
+                System.out.println("\u001B[32m"+"<Client connected>"+"\u001B[0m");
+                input = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
+                output = new DataOutputStream(socket.getOutputStream());
+                int menu = input.readInt();
+                if(menu==1){
+                    int choice = 0;
+                    while (choice==0) {
+                        choice = input.readInt();
+                        switch (choice) {
+                            case 1:
+                                boolean flag;
+                                String name = input.readUTF();
+                                int tel=0;
+                                do{
+                                    flag = true;
+                                    tel = input.readInt();
+                                    if(!this.listPerson.isExist(Integer.toString(tel))){
+                                        flag = false;
+                                        output.writeBoolean(false);
+                                    }
+                                    else output.writeBoolean(true);
 
-            // Kiem tra so dien thoai co ton tai that khong
-            ListPerson lp = new ListPerson();
-            lp.readPerson("../data/person.txt");
-            if ((!lp.isExist(Integer.toString(tel))) && (flag == true)) {
-                flag = false;
-                System.out.println("\u001B[31m" + "<This phone number is not exist, please try again!>" + "\u001B[0m");
-            }
+                                    if(flag){
+                                        if(this.hashAcc.get(tel) != null){
+                                            flag = false;
+                                            output.writeBoolean(false);
+                                        }
+                                        else output.writeBoolean(true);
+                                    }
+                                }while(!flag);
+                                String password = input.readUTF();
+                                Account a = new Account(name, tel, password);
+                                hashAcc.put(tel, a);
+                                saveAccountToFile(a);
+                                break;
+                            case 2:
+                                break;
+                            case 3:
+                                printAllProducts();
+                                break;
+                            case 4:
+                                System.exit(0);
+                                break;
+                        }
+//                    try {
+//                        choice = input.readInt();
+//                        System.out.println(line);
+//                    } catch (IOException i) {
+//                        System.out.println("\u001B[31m"+"<Client disconnected>"+"\u001B[0m");
+//                        socket.close();
+//                        in.close();
+//                        break;
+//                    }
+                    }
+                }
 
-            // Kiem tra so dien thoai da duoc dang ky chua
-            if ((this.hashAcc.get(tel) != null) && (flag == true)) {
-                flag = false;
-                System.out.println(
-                        "\u001B[31m" + "<This phone number has been registered, please try again!>" + "\u001B[0m");
+                socket = server.accept();
             }
-        } while (!flag);
-        sc.nextLine();
-        System.out.print("Password: ");
-        String password = this.nextLine();
-        Account a = new Account(name, tel, password);
-        hashAcc.put(tel, a);
-        saveAccountToFile(a);
-        System.out.println("\u001B[32m" + "<Create account successfully" + "\u001B[0m");
-        // this.pressEnter();
+        }
+        catch(IOException i)
+        {
+            System.out.println("\u001B[31m"+"<Cannot connect to server>"+"\u001B[0m");
+            System.exit(1);
+        }
     }
 
     public boolean login(int tel, String password) {
         if (this.hashAcc.get(tel) != null) {
-            if (this.hashAcc.get(tel).getPassword().equals(password))
+            if(this.hashAcc.get(tel).getPassword().equals(password))
                 return true;
         }
         return false;
     }
 
     private void saveAccountToFile(Account account) {
-        try (FileWriter writer = new FileWriter("data/Account.txt", true)) {
+        try (FileWriter writer = new FileWriter("data/account.txt", true)) {
             writer.write(account.toString() + "\n");
         } catch (IOException e) {
             System.out.println("\u001B[31m" + "<Error writing to file>" + "\u001B[0m");
@@ -82,18 +117,19 @@ public class Sever {
     }
 
     private void loadAccountsFromFile() {
-        try (BufferedReader reader = new BufferedReader(new FileReader("data/Account.txt"))) {
+        try (BufferedReader reader = new BufferedReader(new FileReader("data/account.txt"))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 try {
                     Account account = Account.fromString(line);
                     hashAcc.put(account.getTel(), account);
-                    if (account.getIdAcc() > Sever.getLastAcc()) {
-                        Sever.setLastAcc(account.getIdAcc() + 1);
+                    if (account.getIdAcc() > Server.getLastAcc()) {
+                        Server.setLastAcc(account.getIdAcc() + 1);
                     }
                 } catch (IllegalArgumentException e) {
                     System.out.println("\u001B[31m" + "<Skipping invalid account data: " + line + ">" + "\u001B[0m");
                 }
+                System.out.println("\u001B[32m" + "<Load account successfully>" + "\u001B[0m");
             }
         } catch (IOException e) {
             System.out.println("\u001B[31m" + "<Error reading from file>" + "\u001B[0m");
@@ -101,20 +137,20 @@ public class Sever {
     }
 
     private void loadProductsFromFile() {
-        System.out.println("\u001B[36m" + "Load Product........" + "\u001B[0m");
-        try (BufferedReader reader = new BufferedReader(new FileReader("data/Product.txt"))) {
+        try (BufferedReader reader = new BufferedReader(new FileReader("data/product.txt"))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 try {
                     Product product = Product.fromString(line);
                     hashProd.put(product.getIdProd(), product);
-                    if (product.getIdProd() > Sever.getLastProd()) {
-                        Sever.lastProd = product.getIdProd() + 1;
+                    if (product.getIdProd() > Server.getLastProd()) {
+                        Server.lastProd = product.getIdProd() + 1;
                     }
                 } catch (IllegalArgumentException e) {
                     System.out.println("\u001B[31m" + "<Skipping invalid product data: " + line + ">" + "\u001B[0m");
                 }
             }
+            System.out.println("\u001B[32m" + "<Load product successfully>" + "\u001B[0m");
         } catch (IOException e) {
             System.out.println("\u001B[31m" + "<Error reading from file>" + "\u001B[0m");
         }
@@ -151,55 +187,23 @@ public class Sever {
         }
     }
 
-    public void menuA() {
-        System.out.println("1.Create account");
-        System.out.println("2.Login account");
-        System.out.println("3.Exit");
-    }
-
-    public void menuB() {
-        System.out.println("1.List product");
-        System.out.println("2.My cart");
-        System.out.println("3.Convenient card");
-        System.out.println("4.History transaction");
-        System.out.println("5.Logout account");
-    }
-
-    public void menuB1() {
-        System.out.println("1.Choose product");
-        System.out.println("2.Exit");
-    }
-
-    public void menuB2() {
-        System.out.println("1.Change quantify");
-        System.out.println("2.Order");
-        System.out.println("3.Clear cart");
-        System.out.println("4.Exit");
-    }
-
-    public void menuB3A() {
-        System.out.println("1.Create convenient card");
-        System.out.println("2.Exit");
-    }
-
-    public void menuB3B() {
-        System.out.println("1.Check balance");
-        System.out.println("2.");
-    }
-
     public static void setLastAcc(int n) {
-        Sever.lastAcc = n;
+        Server.lastAcc = n;
     }
 
     public static int getLastAcc() {
-        return Sever.lastAcc;
+        return Server.lastAcc;
     }
 
     public static void setLastProd(int n) {
-        Sever.lastProd = n;
+        Server.lastProd = n;
     }
 
     public static int getLastProd() {
-        return Sever.lastProd;
+        return Server.lastProd;
+    }
+
+    public static void main(String[] args) {
+        Server s = new Server(5000);
     }
 }

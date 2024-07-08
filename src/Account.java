@@ -9,8 +9,8 @@ public class Account {
 
     public Account(String name, int tel, String password) {
         Customer c = new Basic(name, 0);
-        this.idAcc = Sever.getLastAcc();
-        Sever.setLastAcc(Sever.getLastAcc() + 1);
+        this.idAcc = Server.getLastAcc();
+        Server.setLastAcc(Server.getLastAcc() + 1);
         this.tel = tel;
         this.password = password;
         this.customer = c;
